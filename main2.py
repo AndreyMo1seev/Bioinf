@@ -64,3 +64,52 @@ rnaTable = {
 'UUG': 'L',
 'UUU': 'F'
 }
+
+
+def proteinTranslation(rnaPattern):
+    result = ''
+    # rnaPattern = str(input())
+    for i in range(0, len(rnaPattern), 3):
+        result += rnaTable[rnaPattern[i:i + 3:]]
+    # print(result)
+    return result
+
+
+def dnkTranscribe(dnk):
+    dnkresult = ''
+    # for s in dnk:
+    #     if s == 'T': # заменить Т на U
+    #         dnkresult += 'U'
+    #     else:
+    #         dnkresult += s
+    if 'T' in dnk:
+        dnkresult = dnk.replace('T', 'U')
+    elif 'U' in dnk:
+        dnkresult = dnk.replace('U', 'T')
+    else:
+        dnkresult = dnk
+    return dnkresult
+
+
+def reverseDnkTranscribe(dnk):
+    # dnk = str(input())
+    reversDnk = ''
+    pairs = {'A': 'T', 'C': 'G', 'G': 'C', "T": 'A'}
+    for i in dnk:
+        reversDnk += pairs[i]
+    reversDnk = reversDnk[::-1]
+    return reversDnk
+
+
+dna = str(input())
+geneticCode = str(input())
+result = []
+# for i in range(0, len(dna) - len(geneticCode), len(geneticCode) * 3):
+for i in range(0, len(dna) - len(geneticCode) * 3 + 1, 1):
+    tmp = dna[i:i+len(geneticCode) * 3:]
+    if proteinTranslation(dnkTranscribe(tmp)) == geneticCode:
+        result.append(tmp)
+    elif proteinTranslation(dnkTranscribe(reverseDnkTranscribe(tmp))) == geneticCode:
+        result.append(tmp)
+for j in result:
+    print(j)
