@@ -1,115 +1,129 @@
-rnaTable = {
-'AAA': 'K',
-'AAC': 'N',
-'AAG': 'K',
-'AAU': 'N',
-'ACA': 'T',
-'ACC': 'T',
-'ACG': 'T',
-'ACU': 'T',
-'AGA': 'R',
-'AGC': 'S',
-'AGG': 'R',
-'AGU': 'S',
-'AUA': 'I',
-'AUC': 'I',
-'AUG': 'M',
-'AUU': 'I',
-'CAA': 'Q',
-'CAC': 'H',
-'CAG': 'Q',
-'CAU': 'H',
-'CCA': 'P',
-'CCC': 'P',
-'CCG': 'P',
-'CCU': 'P',
-'CGA': 'R',
-'CGC': 'R',
-'CGG': 'R',
-'CGU': 'R',
-'CUA': 'L',
-'CUC': 'L',
-'CUG': 'L',
-'CUU': 'L',
-'GAA': 'E',
-'GAC': 'D',
-'GAG': 'E',
-'GAU': 'D',
-'GCA': 'A',
-'GCC': 'A',
-'GCG': 'A',
-'GCU': 'A',
-'GGA': 'G',
-'GGC': 'G',
-'GGG': 'G',
-'GGU': 'G',
-'GUA': 'V',
-'GUC': 'V',
-'GUG': 'V',
-'GUU': 'V',
-'UAA':  '',
-'UAC': 'Y',
-'UAG': '',
-'UAU': 'Y',
-'UCA': 'S',
-'UCC': 'S',
-'UCG': 'S',
-'UCU': 'S',
-'UGA': '',
-'UGC': 'C',
-'UGG': 'W',
-'UGU': 'C',
-'UUA': 'L',
-'UUC': 'F',
-'UUG': 'L',
-'UUU': 'F'
-}
+def Mass(Peptide, weightOfSubPept):
+    mas = 0
+    for p in Peptide:
+        mas += weightOfSubPept[p]
+    return mas
 
 
-def proteinTranslation(rnaPattern):
-    result = ''
-    # rnaPattern = str(input())
-    for i in range(0, len(rnaPattern), 3):
-        result += rnaTable[rnaPattern[i:i + 3:]]
-    # print(result)
-    return result
+def WeightList(listOfSubPept, wList, weightOfSubPept):
+    wList = [0]
+    for k in listOfSubPept:
+        if len(k) == 1:
+            wList.append(weightOfSubPept[k])
+        else:
+            tmp = 0
+            for i in range(len(k)):
+                tmp += weightOfSubPept[k[i:i + 1]]
+            wList.append(tmp)
+    wList.sort()
+    return wList
 
 
-def dnkTranscribe(dnk):
-    dnkresult = ''
-    # for s in dnk:
-    #     if s == 'T': # заменить Т на U
-    #         dnkresult += 'U'
-    #     else:
-    #         dnkresult += s
-    if 'T' in dnk:
-        dnkresult = dnk.replace('T', 'U')
-    elif 'U' in dnk:
-        dnkresult = dnk.replace('U', 'T')
+def ParentMass(Spectrum):
+    return max(Spectrum)
+
+
+def Expand(Peptide, weightOfSubPept, ourPeptide):
+    if not Peptide:
+        for s in weightOfSubPept:
+            Peptide.append(s)
     else:
-        dnkresult = dnk
-    return dnkresult
+        oldPeptide = Peptide.copy()
+        Peptide.clear()
+        for i in range(len(oldPeptide)):
+            for k in ourPeptide:
+                Peptide.append(oldPeptide[i] + k)
+    return Peptide
 
 
-def reverseDnkTranscribe(dnk):
-    # dnk = str(input())
-    reversDnk = ''
-    pairs = {'A': 'T', 'C': 'G', 'G': 'C', "T": 'A'}
-    for i in dnk:
-        reversDnk += pairs[i]
-    reversDnk = reversDnk[::-1]
-    return reversDnk
+def SubPeptide(pept): # в презентации эта функция называется Cyclospectrum
+    n = len(pept)
+    listOfSubPept = []
+    pept1 = pept
+    pept += pept
+    for i in range(1, len(pept1)):
+        for j in range(0, len(pept1)):
+            listOfSubPept.append(pept[j: j + i])
+    listOfSubPept.append(pept1)
+    return listOfSubPept
 
 
-dna = str(input())
-geneticCode = str(input())
-result = []
-# for i in range(0, len(dna) - len(geneticCode), len(geneticCode) * 3):
-for i in range(0, len(dna) - len(geneticCode) * 3 + 1, 1):
-    tmp = dna[i:i+len(geneticCode) * 3:]
-    if proteinTranslation(dnkTranscribe(tmp)) == geneticCode:
-        result.append(tmp)
-    elif proteinTranslation(dnkTranscribe(reverseDnkTranscribe(tmp))) == geneticCode:
-        result.append(tmp)
-for j in result:
-    print(j)
+def PrintPeptide(Peptide, weightOfSubPept, lst):
+    tmpStr = ""
+    for i in range(len(Peptide) - 1):
+        tmpStr += str(weightOfSubPept[Peptide[i]])
+        tmpStr += "-"
+        # print(weightOfSubPept[Peptide[i]], "-", sep='', end="")
+    tmpStr += str(weightOfSubPept[Peptide[len(Peptide) - 1]])
+    # print(weightOfSubPept[Peptide[len(Peptide) - 1]])
+    if tmpStr not in lst:
+        print(tmpStr)
+        lst.append(tmpStr)
+
+
+def Consistens(Peptide, Spectrum, weightOfSubPept, wList):
+    PeptideSpectr = WeightList(Peptide, wList, weightOfSubPept)
+    tmpPeptSpectr = PeptideSpectr.copy()
+    for s in Spectrum:
+        for m in PeptideSpectr:
+            if m not in Spectrum:
+                return False
+            if m == s:
+                tmpPeptSpectr.remove(m)
+                break
+        PeptideSpectr = tmpPeptSpectr
+    if PeptideSpectr:
+        return False
+    else:
+        return True
+weightOfSubPept = {
+    'G': 57,
+    'A': 71,
+    'S': 87,
+    'P': 97,
+    'V': 99,
+    'T': 101,
+    'C': 103,
+    'I': 113,
+    'L': 113,
+    'N': 114,
+    'D': 115,
+    'K': 128,
+    'Q': 128,
+    'E': 129,
+    'M': 131,
+    'H': 137,
+    'F': 147,
+    'R': 156,
+    'Y': 163,
+    'W': 186
+}
+sSpectrum = input()
+Spectrum = [int(x) for x in sSpectrum.split()]
+Peptide = []
+lst = [] # так как есть пептиды с одинаковыми массами (I & L , K & Q), то мне приходится перед тем как печатать, смотреть не было ли уже такого
+# Для этого добавляю уже напечатанные в lst
+for s in weightOfSubPept:
+    Peptide.append(s)
+listOfSubPept = []
+wList = [0]
+c = 0
+ourPeptide = [] # ourPeptide - массы пептидов, которые присутствуют в нашем спектре
+for j in Spectrum:
+    for k in Peptide:
+        if j == weightOfSubPept[k]:
+            ourPeptide.append(k)
+Peptide = ourPeptide.copy()
+while Peptide and c <= 100:
+    tmpPept = Peptide.copy()
+    for p in Peptide:
+        if Mass(p, weightOfSubPept) == ParentMass(Spectrum):
+            if WeightList(SubPeptide(p), wList, weightOfSubPept) == Spectrum:
+                PrintPeptide(p, weightOfSubPept, lst)
+                c += 1
+            tmpPept.remove(p)
+        elif not Consistens(p, Spectrum, weightOfSubPept, wList):
+            tmpPept.remove(p)
+
+    Peptide = tmpPept
+    Peptide = Expand(Peptide, weightOfSubPept, ourPeptide)
