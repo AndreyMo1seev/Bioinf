@@ -23,16 +23,12 @@ def ParentMass(Spectrum):
     return max(Spectrum)
 
 
-def Expand(Peptide, weightOfSubPept, ourPeptide):
-    if not Peptide:
-        for s in weightOfSubPept:
-            Peptide.append(s)
-    else:
-        oldPeptide = Peptide.copy()
-        Peptide.clear()
-        for i in range(len(oldPeptide)):
-            for k in ourPeptide:
-                Peptide.append(oldPeptide[i] + k)
+def Expand(Peptide, weightOfSubPept):
+    oldPeptide = Peptide.copy()
+    Peptide.clear()
+    for i in range(len(oldPeptide)):
+        for k in weightOfSubPept:
+            Peptide.append(oldPeptide[i] + k)
     return Peptide
 
 
@@ -45,6 +41,16 @@ def SubPeptide(pept): # в презентации эта функция назы
         for j in range(0, len(pept1)):
             listOfSubPept.append(pept[j: j + i])
     listOfSubPept.append(pept1)
+    return listOfSubPept
+
+def LinearSubPeptide(pept):
+    n = len(pept)
+    listOfSubPept = []
+    for i in range(1, len(pept)):
+        for j in range(0, len(pept)):
+            if pept[j: j + i] not in listOfSubPept:
+                listOfSubPept.append(pept[j: j + i])
+    listOfSubPept.append(pept)
     return listOfSubPept
 
 
@@ -66,8 +72,6 @@ def Consistens(Peptide, Spectrum, weightOfSubPept, wList):
     tmpPeptSpectr = PeptideSpectr.copy()
     for s in Spectrum:
         for m in PeptideSpectr:
-            if m not in Spectrum:
-                return False
             if m == s:
                 tmpPeptSpectr.remove(m)
                 break
@@ -76,6 +80,8 @@ def Consistens(Peptide, Spectrum, weightOfSubPept, wList):
         return False
     else:
         return True
+
+
 weightOfSubPept = {
     'G': 57,
     'A': 71,
@@ -85,10 +91,8 @@ weightOfSubPept = {
     'T': 101,
     'C': 103,
     'I': 113,
-    'L': 113,
     'N': 114,
     'D': 115,
-    'K': 128,
     'Q': 128,
     'E': 129,
     'M': 131,
@@ -109,21 +113,23 @@ listOfSubPept = []
 wList = [0]
 c = 0
 ourPeptide = [] # ourPeptide - массы пептидов, которые присутствуют в нашем спектре
-for j in Spectrum:
-    for k in Peptide:
-        if j == weightOfSubPept[k]:
-            ourPeptide.append(k)
-Peptide = ourPeptide.copy()
+# for j in Spectrum:
+#     for k in Peptide:
+#         if j == weightOfSubPept[k]:
+#             ourPeptide.append(k)
+# Peptide = ourPeptide.copy()
 while Peptide and c <= 100:
     tmpPept = Peptide.copy()
     for p in Peptide:
+        # if p == "TCI":
+            # print(1)
         if Mass(p, weightOfSubPept) == ParentMass(Spectrum):
             if WeightList(SubPeptide(p), wList, weightOfSubPept) == Spectrum:
                 PrintPeptide(p, weightOfSubPept, lst)
                 c += 1
             tmpPept.remove(p)
-        elif not Consistens(p, Spectrum, weightOfSubPept, wList):
+        elif not Consistens(LinearSubPeptide(p), Spectrum, weightOfSubPept, wList):
             tmpPept.remove(p)
 
     Peptide = tmpPept
-    Peptide = Expand(Peptide, weightOfSubPept, ourPeptide)
+    Peptide = Expand(Peptide, weightOfSubPept)
