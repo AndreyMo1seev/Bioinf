@@ -1,65 +1,41 @@
-def SubPeptide(pept, listOfSubPept):
-    n = len(pept)
-    pept1 = pept
-    pept += pept
-    for i in range(1,len(pept1)):
-        for j in range(0, len(pept1)):
-            listOfSubPept.append(pept[j: j + i])
-    listOfSubPept.append(pept1)
+# Input ------------------------------------
+s = str(input())
+t = str(input())
+# ------------------------------------------
+matrix = [[0] * (len(t) + 1) for i in range(len(s) + 1)]
 
 
-def WeightList(listOfSubPept, wList, weightOfSubPept):
-    for k in listOfSubPept:
-        if len(k) == 1:
-            wList.append(weightOfSubPept[k])
+def LCS_DYN(x, y):
+    L = matrix
+    LCS = []
+    x_i, y_i = len(x) - 1, len(y) - 1
+    while x_i >= 0 and y_i >= 0:
+        if x[x_i] == y[y_i]:
+            LCS.append(x[x_i])
+            x_i, y_i = x_i - 1, y_i - 1
+        elif L[x_i - 1][y_i] > L[x_i][y_i - 1]:
+            x_i -= 1
         else:
-            tmp = 0
-            for i in range(len(k)):
-                tmp += weightOfSubPept[k[i:i + 1]]
-            wList.append(tmp)
+            y_i -= 1
+    LCS.reverse()
+    return LCS
 
-def Score(wList, expPeptide):
-    c = 0
-    tmp = expPeptide.copy()
-    lst = []
-    for w in wList:
-        lst = []
-        for e in expPeptide:
-            if w == e and w not in lst:
-                tmp.remove(w)
-                c += 1
-                lst.append(w)
-                expPeptide = tmp
-    return c
 
-weightOfSubPept = {
-    'G': 57,
-    'A': 71,
-    'S': 87,
-    'P': 97,
-    'V': 99,
-    'T': 101,
-    'C': 103,
-    'I': 113,
-    'L': 113,
-    'N': 114,
-    'D': 115,
-    'K': 128,
-    'Q': 128,
-    'E': 129,
-    'M': 131,
-    'H': 137,
-    'F': 147,
-    'R': 156,
-    'Y': 163,
-    'W': 186
-}
-peptide = str(input())
-sexpPeptide = str(input())
-expPeptide = [int(x) for x in sexpPeptide.split()]
-listOfSubPept = []
-SubPeptide(peptide, listOfSubPept)
-wList = [0]
-WeightList(listOfSubPept, wList, weightOfSubPept)
-print()
-print(Score(wList, expPeptide))
+n = len(s)
+m = len(t)
+maxvalue = 0
+c = -1
+r = -1
+result = ''
+for column in range(1, n + 1):
+    for row in range(1, m + 1):
+        matrix[column][0] = matrix[column - 1][0]
+        diag = 0
+        if s[column - 1] == t[row - 1]:
+            diag = 1
+        matrix[column][row] = max(matrix[column - 1][row], matrix[column][row - 1], matrix[column - 1][row - 1] + diag)
+
+
+result = ''.join(LCS_DYN(t, s))
+print(matrix[n][m])
+print(result)
